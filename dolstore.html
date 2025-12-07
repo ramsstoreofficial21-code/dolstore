@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DOLXIE STORE</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:sans-serif}
+body{background:#f5f5f5;display:flex;flex-direction:column;min-height:100vh;overflow-x:hidden}
+
+/* Topbar */
+.topbar{background:#fff;padding:10px 15px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 4px rgba(0,0,0,0.1);position:sticky;top:0;z-index:10}
+.store-name{font-size:18px;font-weight:bold;margin-right:10px}
+.search-bar{flex:1;margin:0 10px;position:relative}
+.search-bar input[type="text"]{padding:8px 12px;border:1px solid #ccc;border-radius:20px;width:100%}
+.cart-icon{font-size:24px;cursor:pointer;position:relative}
+.cart-count{position:absolute;top:-5px;right:-10px;background:red;color:#fff;font-size:12px;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+
+/* Pages */
+.page{display:none;flex:1;overflow:auto}
+.page.active{display:flex;flex-direction:column}
+
+/* Bottom nav */
+.bottom-nav{display:flex;justify-content:space-around;background:#fff;padding:10px 0;box-shadow:0 -2px 4px rgba(0,0,0,0.1);position:sticky;bottom:0}
+.bottom-nav div{display:flex;flex-direction:column;align-items:center;font-size:14px;cursor:pointer;color:#555}
+.bottom-nav div.active{color:#1a73e8}
+.bottom-nav div i{font-size:20px;margin-bottom:4px}
+
+/* flying image */
+.flying-img{position:absolute;width:50px;height:50px;border-radius:10px;z-index:1000;transition:transform 0.8s ease-in-out, opacity 0.8s ease-in-out}
+
+/* Kategori & produk */
+.section-title{padding:15px;font-weight:bold;font-size:16px}
+.horizontal-scroll{display:flex;overflow-x:auto;gap:10px;padding:0 15px}
+.category-item{padding:8px 15px;background:#fff;border-radius:20px;margin-left:10px;cursor:pointer;white-space:nowrap}
+.category-item.active{background:#1a73e8;color:#fff;font-weight:bold}
+.product-card{background:#fff;padding:10px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1);text-align:center;transition:transform 0.2s;position:relative;cursor:pointer}
+.product-card:hover{transform:translateY(-5px)}
+.product-card img{width:100%;border-radius:10px;height:100px;object-fit:cover;margin-bottom:5px}
+.product-card h3{font-size:14px;margin:0 0 4px}
+.product-card p{font-size:12px;color:#555;margin-bottom:5px}
+.product-card button{padding:4px 8px;border:none;background:#1a73e8;color:#fff;border-radius:5px;cursor:pointer;font-size:12px}
+.product-card button:hover{background:#155ab6}
+.badge{position:absolute;top:5px;left:5px;background:red;color:#fff;padding:2px 5px;border-radius:5px;font-size:10px;font-weight:bold}
+.banner-carousel{display:flex;overflow-x:hidden;scroll-snap-type:x mandatory;gap:10px;padding:15px;position:relative}
+.banner-carousel img{min-width:100%;height:140px;border-radius:10px;object-fit:cover;scroll-snap-align:start;transition:transform 0.5s}
+.product-detail img{width:100%;border-radius:10px;object-fit:cover;margin-bottom:15px}
+.product-detail h2{margin-bottom:10px}
+.product-detail p{margin-bottom:10px}
+.cart-item{display:flex;align-items:center;justify-content:space-between;background:#fff;padding:10px;margin-bottom:5px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.cart-item-info{display:flex;align-items:center;gap:10px}
+.cart-item img{width:50px;height:50px;border-radius:10px;object-fit:cover}
+.cart-item button{padding:2px 6px;border:none;background:red;color:#fff;border-radius:5px;cursor:pointer;font-size:12px}
+.cart-item-qty{display:flex;align-items:center;gap:5px}
+.cart-item-qty button{padding:2px 6px;border:none;background:#1a73e8;color:#fff;border-radius:5px;font-size:12px}
+
+/* Notifikasi */
+.notif-item{background:#fff;padding:10px;margin-bottom:5px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1);cursor:pointer}
+.notif-item.unread{border-left:4px solid #1a73e8}
+
+/* Detail Produk mirip Shopee */
+.product-detail-images{display:flex;overflow-x:scroll;scroll-snap-type:x mandatory;margin-bottom:10px}
+.product-detail-images img{min-width:100%;height:300px;object-fit:cover;scroll-snap-align:start;border-radius:10px;margin-bottom:5px}
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar" style="display:flex">
+  <div class="store-name">DOLXIE STORE</div>
+  <div class="search-bar">
+    <input type="text" placeholder="Cari produk..." oninput="searchProduct(this.value)">
+  </div>
+  <div style="position:relative">
+    <i class="fas fa-shopping-cart cart-icon" onclick="showPage('cart')"></i>
+    <div class="cart-count" id="cart-count">0</div>
+  </div>
+</div>
+
+<!-- Halaman Home -->
+<div id="home" class="page active">
+  <div class="banner-carousel" id="banner-list"></div>
+  <div class="horizontal-scroll" id="category-list"></div>
+  <div id="product-sections"></div>
+</div>
+
+<!-- Halaman Detail Produk -->
+<div id="product-detail" class="page">
+  <div class="product-detail" id="detail-content" style="padding:15px"></div>
+</div>
+
+<!-- Halaman Profile -->
+<div id="profile" class="page">
+  <div style="background:#1a73e8;color:#fff;padding:20px;border-bottom-left-radius:20px;border-bottom-right-radius:20px">
+    <div style="display:flex;align-items:center;gap:15px">
+      <img src="https://via.placeholder.com/60" alt="Avatar" style="width:60px;height:60px;border-radius:50%;border:2px solid #fff">
+      <div>
+        <h2 style="margin:0;font-size:18px">User Name</h2>
+        <p style="margin:2px 0;font-size:14px">Level Silver</p>
+      </div>
+    </div>
+    <div style="margin-top:15px;font-size:14px">Saldo: <b id="user-saldo">Rp 0</b></div>
+  </div>
+
+  <div style="display:flex;justify-content:space-around;background:#fff;margin:15px;border-radius:10px;padding:15px;box-shadow:0 2px 5px rgba(0,0,0,0.1)">
+    <div style="text-align:center;cursor:pointer" onclick="showVoucher()">
+      <i class="fas fa-gift" style="font-size:20px;color:#1a73e8"></i>
+      <p style="margin-top:5px;font-size:12px">Voucher</p>
+    </div>
+    <div style="text-align:center;cursor:pointer" onclick="showOrders()">
+      <i class="fas fa-box" style="font-size:20px;color:#1a73e8"></i>
+      <p style="margin-top:5px;font-size:12px">Pesanan</p>
+    </div>
+    <div style="text-align:center;cursor:pointer" onclick="showWishlist()">
+      <i class="fas fa-heart" style="font-size:20px;color:#1a73e8"></i>
+      <p style="margin-top:5px;font-size:12px">Wishlist</p>
+    </div>
+    <div style="text-align:center;cursor:pointer" onclick="showTopUp()">
+      <i class="fas fa-wallet" style="font-size:20px;color:#1a73e8"></i>
+      <p style="margin-top:5px;font-size:12px">Top Up</p>
+    </div>
+  </div>
+
+  <div id="profile-content" style="background:#fff;margin:15px;border-radius:10px;padding:15px;box-shadow:0 2px 5px rgba(0,0,0,0.1)">
+    <p>Pilih menu cepat di atas untuk melihat konten</p>
+  </div>
+
+  <div style="background:#fff;margin:15px;border-radius:10px;padding:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1)">
+    <div style="padding:10px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="alert('Edit Profil')">
+      <span>Profil</span> <i class="fas fa-chevron-right"></i>
+    </div>
+    <div style="padding:10px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="alert('Alamat')">
+      <span>Alamat</span> <i class="fas fa-chevron-right"></i>
+    </div>
+    <div style="padding:10px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="alert('Notifikasi')">
+      <span>Notifikasi</span> <i class="fas fa-chevron-right"></i>
+    </div>
+    <div style="padding:10px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="alert('Logout')">
+      <span>Logout</span> <i class="fas fa-chevron-right"></i>
+    </div>
+  </div>
+</div>
+
+<!-- Halaman Notifikasi -->
+<div id="notifikasi" class="page">
+  <div style="padding:15px">
+    <h2>Notifikasi</h2>
+    <div id="notif-list">
+      <p> </p>
+    </div>
+  </div>
+</div>
+
+<!-- Halaman Keranjang -->
+<div id="cart" class="page">
+  <div style="padding:15px" id="cart-content">
+    <h2>Keranjang</h2>
+    <p>Belum ada produk</p>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <div id="nav-home" class="active" onclick="showPage('home')"><i class="fas fa-home"></i><span>Home</span></div>
+  <div id="nav-profile" onclick="showPage('profile')"><i class="fas fa-user"></i><span>Profile</span></div>
+  <div id="nav-notifikasi" onclick="showPage('notifikasi')"><i class="fas fa-bell"></i><span>Notifikasi</span></div>
+</div>
+
+<script>
+// DATA
+let cart=[]
+let saldo = 500000
+let currentBanner=0
+const categories=['Panel Pterodactyl','Vps','Script Bot','Nomor Kosong']
+const banners=[
+  'https://raw.githubusercontent.com/rhnxofficial/Uploader/main/uploader/rhnx-tLem.jpg',
+  'https://raw.githubusercontent.com/rhnxofficial/Uploader/main/uploader/rhnx-tLem.jpg',
+  'https://raw.githubusercontent.com/rhnxofficial/Uploader/main/uploader/rhnx-tLem.jpg'
+]
+const products=[
+  {id:1,name:'Admin Panel',price:100000,img:'https://raw.githubusercontent.com/rhnxofficial/Uploader/main/uploader/rhnx-OE3k.jpg',desc:'Deskripsi Admin Panel',discount:20,qty:1,category:'Panel Pterodactyl', images:['https://raw.githubusercontent.com/rhnxofficial/Uploader/main/uploader/rhnx-OE3k.jpg','https://raw.githubusercontent.com/rhnxofficial/Uploader/main/uploader/rhnx-tLem.jpg']},
+  {id:2,name:'Partner Panel',price:200000,img:'https://raw.githubusercontent.com/rhnxofficial/Uploader/main/uploader/rhnx-OE3k.jpg',desc:'Deskripsi Partner Panel',discount:0,qty:1,category:'Panel Pterodactyl', images:['https://raw.githubusercontent.com/rhnxofficial/Uploader/main/uploader/rhnx-OE3k.jpg']},
+  {id:3,name:'Owner Panel',price:150000,img:'https://raw.githubusercontent.com/rhnxofficial/Uploader/main/uploader/rhnx-OE3k.jpg',desc:'Deskripsi Owner Panel',discount:10,qty:1,category:'Panel Pterodactyl', images:['https://raw.githubusercontent.com/rhnxofficial/Uploader/main/uploader/rhnx-OE3k.jpg','https://raw.githubusercontent.com/rhnxofficial/Uploader/main/uploader/rhnx-tLem.jpg']},
+  {id:4,name:'Tangan Kanan Panel',price:250000,img:'https://raw.githubusercontent.com/rhnxofficial/Uploader/main/uploader/rhnx-OE3k.jpg',desc:'Deskripsi Tangan Kanan Panel',discount:0,qty:1,category:'Panel Pterodactyl', images:['https://raw.githubusercontent.com/rhnxofficial/Uploader/main/uploader/rhnx-OE3k.jpg']},
+  {id:5,name:'PANEL RAM 1 GB',price:120000,img:'https://raw.githubusercontent.com/rhnxofficial/Uploader/main/uploader/rhnx-OE3k.jpg',desc:'Deskripsi PANEL RAM 1 GB',discount:15,qty:1,category:'Panel Pterodactyl', images:['https://raw.githubusercontent.com/rhnxofficial/Uploader/main/uploader/rhnx-OE3k.jpg']},
+  {id:6,name:'PANEL RAM 2 GB',price:180000,img:'https://raw.githubusercontent.com/rhnxofficial/Uploader/main/uploader/rhnx-OE3k.jpg',desc:'Deskripsi PANEL RAM 2 GB',discount:0,qty:1,category:'Panel Pterodactyl', images:['https://raw.githubusercontent.com/rhnxofficial/Uploader/main/uploader/rhnx-OE3k.jpg']}
+]
+
+// banner
+const bannerList=document.getElementById('banner-list')
+banners.forEach(src=>{ const img=document.createElement('img'); img.src=src; bannerList.appendChild(img) })
+setInterval(()=>{ currentBanner=(currentBanner+1)%banners.length; bannerList.scrollTo({left:currentBanner*bannerList.offsetWidth,behavior:'smooth'}) },3000)
+
+// kategori
+const categoryList=document.getElementById('category-list')
+categories.forEach(cat=>{
+  const div=document.createElement('div'); div.className='category-item'; div.innerText=cat
+  div.addEventListener('click',()=>{
+    document.querySelectorAll('.category-item').forEach(c=>c.classList.remove('active'))
+    div.classList.add('active')
+    generateProductSections(cat)
+  })
+  categoryList.appendChild(div)
+})
+
+// pencarian & produk
+function searchProduct(keyword){ generateProductSections(null,keyword) }
+function generateProductSections(filterCategory=null,keyword=''){
+  const sectionContainer=document.getElementById('product-sections'); sectionContainer.innerHTML=''
+  let displayCategories=filterCategory? [filterCategory]: categories
+  displayCategories.forEach(cat=>{
+    const section=document.createElement('div'); 
+    section.innerHTML=`<div class="section-title">${cat}</div>`
+    const grid=document.createElement('div'); 
+    grid.style.display='grid'; grid.style.gridTemplateColumns='1fr 1fr'; grid.style.gap='10px'; grid.style.padding='0 15px'
+    products.filter(p=>p.category===cat && p.name.toLowerCase().includes(keyword.toLowerCase())).forEach(p=>{
+      const card=document.createElement('div'); card.className='product-card'; card.dataset.id=p.id
+      const badge=p.discount>0?`<div class="badge">${p.discount}% OFF</div>`:''
+      card.innerHTML=`${badge}<img src="${p.img}"><h3>${p.name}</h3><p>Rp ${p.price}</p><button onclick="buyProduct(this)">Beli</button>`
+      card.querySelector('img').addEventListener('click',()=>showDetail(p.id))
+      card.querySelector('h3').addEventListener('click',()=>showDetail(p.id))
+      grid.appendChild(card)
+    })
+    section.appendChild(grid); sectionContainer.appendChild(section)
+  })
+}
+generateProductSections()
+
+// halaman
+function showPage(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
+  document.getElementById(page).classList.add('active')
+  document.querySelectorAll('.bottom-nav div').forEach(n=>n.classList.remove('active'))
+  if(page==='home') document.getElementById('nav-home').classList.add('active')
+  if(page==='profile') document.getElementById('nav-profile').classList.add('active')
+  if(page==='notifikasi') document.getElementById('nav-notifikasi').classList.add('active')
+  if(page==='cart') renderCart()
+}
+
+// detail produk multi-gambar seperti Shopee
+function showDetail(id){
+  const p=products.find(x=>x.id===id)
+  const container=document.getElementById('detail-content')
+  
+  let imagesHTML=''
+  p.images.forEach(imgSrc=>{
+    imagesHTML+=`<img src="${imgSrc}">`
+  })
+
+  container.innerHTML=`<img src="${p.img}"><h2>${p.name}</h2><p>${p.desc}</p><p>Rp ${p.price}</p>
+  <button onclick="buyProductDetail(${p.id})">Beli</button>
+  <button onclick="showPage('home')" style="margin-top:10px;background:#ccc;color:#000">Kembali</button>`
+  showPage('product-detail')
+}
+
+// beli
+function buyProductDetail(id){ const p=products.find(x=>x.id===id); const img=document.querySelector('#detail-content img'); flyToCart(img,p) }
+function buyProduct(btn){ const card=btn.parentElement; const p=products.find(x=>x.id==card.dataset.id); const img=card.querySelector('img'); flyToCart(img,p) }
+function flyToCart(img,p){
+  const rect=img.getBoundingClientRect(); const flyImg=img.cloneNode(true)
+  flyImg.style.position='absolute'; flyImg.style.left=rect.left+'px'; flyImg.style.top=rect.top+'px'
+  flyImg.style.width=rect.width+'px'; flyImg.style.height=rect.height+'px'; flyImg.classList.add('flying-img')
+  document.body.appendChild(flyImg)
+  const cartIcon=document.querySelector('.cart-icon'); const cartRect=cartIcon.getBoundingClientRect()
+  setTimeout(()=>{ flyImg.style.transform=`translate(${cartRect.left-rect.left}px,${cartRect.top-rect.top}px) scale(0.2)`; flyImg.style.opacity='0' },10)
+  flyImg.addEventListener('transitionend',()=>{
+    document.body.removeChild(flyImg)
+    let found=cart.find(x=>x.id===p.id)
+    if(found){ found.qty+=1 }else{ cart.push({...p}) }
+    document.getElementById('cart-count').innerText=cart.reduce((a,b)=>a+b.qty,0)
+  })
+}
+
+// Render Cart
+function renderCart(){
+  const cartContent=document.getElementById('cart-content')
+  cartContent.innerHTML='<h2>Keranjang</h2>'
+  if(cart.length===0){ cartContent.innerHTML+='<p>Belum ada produk</p>'; return }
+  let total=0
+  cart.forEach((p,index)=>{
+    const item=document.createElement('div'); item.className='cart-item'
+    item.innerHTML=`<div class="cart-item-info"><img src="${p.img}"><div>${p.name}</div></div>
+      <div class="cart-item-qty">
+        <button onclick="changeQty(${index},-1)">-</button><span>${p.qty}</span><button onclick="changeQty(${index},1)">+</button>
+      </div>
+      <button onclick="removeItem(${index})">Hapus</button>`
+    cartContent.appendChild(item)
+    total+=p.price*p.qty
+  })
+  const totalDiv=document.createElement('h3'); totalDiv.innerText=`Total: Rp ${total}`; cartContent.appendChild(totalDiv)
+}
+
+// ubah jumlah
+function changeQty(index,val){ cart[index].qty+=val; if(cart[index].qty<1) cart[index].qty=1; renderCart(); document.getElementById('cart-count').innerText=cart.reduce((a,b)=>a+b.qty,0) }
+
+// hapus item
+function removeItem(index){ cart.splice(index,1); renderCart(); document.getElementById('cart-count').innerText=cart.reduce((a,b)=>a+b.qty,0) }
+</script>
+
+</body>
+</html>
